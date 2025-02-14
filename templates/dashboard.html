@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Bem-vindo, {{ user.username }}!</h1>
+    <p>Pontuação total: {{ user.points }}</p>
+    <h2>Registrar Atividade</h2>
+    <form method="POST">
+        <label for="activity_type">Atividade:</label>
+        <select id="activity_type" name="activity_type">
+            <option value="Musculação">Musculação</option>
+            <option value="Cardio">Cardio</option>
+            <option value="Yoga">Yoga</option>
+            <option value="Leitura">Leitura</option>
+            <option value="Alimentação Saudável">Alimentação Saudável</option>
+            <option value="Hidratação">Hidratação</option>
+        </select>
+        <button type="submit">Registrar</button>
+    </form>
+    <a href="{{ url_for('ranking') }}">Ver Ranking</a>
+</body>
+</html>
