@@ -1,8 +1,10 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Banco de dados SQLite
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Modelo de Usuário
@@ -42,8 +44,8 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:  # Simples verificação (ideal: usar hash de senha)
             return redirect(url_for('dashboard', user_id=user.id))
     return render_template('login.html')
 
@@ -62,30 +64,28 @@ def dashboard(user_id):
 
 # Função para calcular pontos
 def calculate_points(activity_type):
-    if activity_type == 'Musculação':
-        return 2
-    elif activity_type == 'Cardio':
-        return 1
-    elif activity_type == 'Yoga':
-        return 3
-    elif activity_type == 'Leitura':
-        return 1
-    elif activity_type == 'Alimentação Saudável':
-        return 1
-    elif activity_type == 'Hidratação':
-        return 1
-    return 0
+    points_map = {
+        'Musculação': 2,
+        'Cardio': 1,
+        'Yoga': 3,
+        'Leitura': 1,
+        'Alimentação Saudável': 1,
+        'Hidratação': 1
+    }
+    return points_map.get(activity_type, 0)
 
 # Rota do Ranking
 @app.route('/ranking')
 def ranking():
-    users = User.query.order_by(User.points.desc()).all()  # Ordena por pontos
+    users = User.query.order_by(User.points.desc()).all()
     return render_template('ranking.html', users=users)
 
-# Criar o banco de dados
-with app.app_context():
-    db.create_all()
+# Criar o banco de dados se não existir
+def setup_database():
+    with app.app_context():
+        db.create_all()
 
-# Rodar o aplicativo
 if __name__ == '__main__':
-    app.run(debug=True)
+    setup_database()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
